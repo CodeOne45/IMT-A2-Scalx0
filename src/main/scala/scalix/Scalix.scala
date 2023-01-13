@@ -1,9 +1,11 @@
 package scalix
 
 import scala.io.Source
-import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.json4s.*
+import org.json4s.native.JsonMethods.*
 import org.json4s.DefaultJsonFormats.*
+
+import scala.io.Source.fromFile
 
 object Scalix extends App {
 
@@ -84,10 +86,8 @@ object Scalix extends App {
   }
 
   private val director = findMovieDirector(movies(0)._1).getOrElse((0, ""))
-  println("Réalisateur du premier film : " + director._2)
+  println("Réalisateur du film : " + director._2)
   println("----------------------------------------")
-
-
 
 
   private def collaboration(actor1: FullName, actor2: FullName): Set[(String, String)] = {
@@ -123,11 +123,10 @@ object Scalix extends App {
     val file = new java.io.File(s"data/actor$actorID.json")
     if (!file.exists())
       file.createNewFile()
-    // write the content of the file without removing the previous content (append mode) go to next line
-    val writer = new java.io.PrintWriter(new java.io.FileWriter(file, true))
-    writer.println(acteurID.toString)
+    // write actor id in file as json format
+    val writer = new java.io.PrintWriter(file)
+    writer.write(s"""{"id": $actorID}""")
     writer.close()
-
   }
 
   private def addMoviesToFile(movies: Set[(Int, String)]): Unit = {
@@ -135,11 +134,15 @@ object Scalix extends App {
     val file = new java.io.File(s"data/movies$acteurID.json")
     if (!file.exists())
       file.createNewFile()
-    // write the content of the file without removing the previous content (append mode) go to next line
-    val writer = new java.io.PrintWriter(new java.io.FileWriter(file, true))
-    movies.foreach(movie => writer.println(movie._1.toString + " " + movie._2))
+    // write movies in file as json format, each movie is sperated by a comma
+    val writer = new java.io.PrintWriter(file)
+    writer.write(s"""{"movies": [""")
+    if (movies.nonEmpty) {
+      writer.write(s"""{"id": ${movies.head._1}, "title": "${movies.head._2}"}""")
+      movies.tail.foreach(movie => writer.write(s""", {"id": ${movie._1}, "title": "${movie._2}"}"""))
+    }
+    writer.write(s"""]}""")
     writer.close()
-
   }
 
   // add the result of the query to the data directory
@@ -159,6 +162,21 @@ object Scalix extends App {
 
   findActorId("Brad", "Pitt", true)
 
+  // read actor$id.json and return the id of the actor
+  private def readActorId(actorID: Int): Int = {
+    val file = new java.io.File(s"data/actor$actorID.json")
+    val source = Source.fromFile(file)
+    val contents = source.mkString
+    val json = parse(contents)
+    json \ "id" match {
+      case JInt(id) => id.toInt
+      case _ => throw new Exception("Error: id is not an integer")
+    }
+  }
+  println("ID de l'acteur (file): " + readActorId(acteurID))
+  println("----------------------------------------")
+
+
   private def finMovifindActorMovies2(actorId: Int, save: Boolean): Unit = {
     val url = s"https://api.themoviedb.org/3/person/$actorId/movie_credits?api_key=$api_key"
     val source = Source.fromURL(url)
@@ -176,8 +194,25 @@ object Scalix extends App {
         })).toSet)
     }
   }
-
   finMovifindActorMovies2(287, true)
+
+  // read movie$id.json and return the set of movies of the actor
+  private def readMovies(actorID: Int): Set[(Int, String)] = {
+    val file = new java.io.File(s"data/movies$actorID.json")
+    val source = Source.fromFile(file)
+    val contents = source.mkString
+    val json = parse(contents)
+    (json \ "movies").children.map(movie => (movie \ "id", movie \ "title"))
+      .map(movie => (movie._1 match {
+        case JInt(id) => id.toInt
+        case _ => throw new Exception("Error: id is not an integer")
+      }, movie._2 match {
+        case JString(title) => title
+        case _ => throw new Exception("Error: title is not a string")
+      })).toSet
+  }
+
+  println("Films de l'acteur (file): " + readMovies(acteurID).foreach(println))
 
   /* ---------------- */
   // the results of the different TMDB methods in a dictionary (or map) whose keys correspond to the input data and the values to the results, for example: Map[(String, String), Int] for findActorId.
