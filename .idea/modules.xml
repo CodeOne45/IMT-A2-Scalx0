@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Scalx0.iml" filepath="$PROJECT_DIR$/.idea/modules/Scalx0.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Scalx0-build.iml" filepath="$PROJECT_DIR$/.idea/modules/Scalx0-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/imt-a2-scalx0.iml" filepath="$PROJECT_DIR$/.idea/modules/imt-a2-scalx0.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/imt-a2-scalx0-build.iml" filepath="$PROJECT_DIR$/.idea/modules/imt-a2-scalx0-build.iml" />
     </modules>
   </component>
 </project>

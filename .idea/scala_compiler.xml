@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="sbt 1" modules="Scalx0" />
+    <profile name="sbt 1" modules="imt-a2-scalx0,imt-a2-scalx0_8372" />
   </component>
 </project>
